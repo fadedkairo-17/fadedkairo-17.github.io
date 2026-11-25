@@ -1,5 +1,5 @@
 /*
-  Text coming in as you reach it.
+  Text coming in as you reach it, every time you reach it.
   Headings roll in letter by letter (or word by word when they are long),
   everything else just fades up. The hidden starting state only applies when
   the <html> tag has the "js" class, so the page still reads with scripts off.
@@ -69,18 +69,29 @@
     waves.forEach(split);
     blocks.forEach(function (el) { el.setAttribute("data-reveal", ""); });
 
-    var seen = new IntersectionObserver(function (entries) {
+    // Coming in: play once a bit of the element is on screen.
+    var arriving = new IntersectionObserver(function (entries) {
       var order = 0;
       entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
+        if (!entry.isIntersecting || entry.target.classList.contains("is-in")) return;
         // things that arrive together come in one after another
         entry.target.style.setProperty("--d", (order++ * 70) + "ms");
         entry.target.classList.add("is-in");
-        seen.unobserve(entry.target);
       });
     }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
 
-    waves.concat(blocks).forEach(function (el) { seen.observe(el); });
+    // Going out: reset only once the element is completely off screen, so it
+    // never blinks out while you can still see it, and plays again next time.
+    var leaving = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) entry.target.classList.remove("is-in");
+      });
+    }, { threshold: 0 });
+
+    waves.concat(blocks).forEach(function (el) {
+      arriving.observe(el);
+      leaving.observe(el);
+    });
   } catch (err) {
     root.classList.remove("js"); // never leave the page hidden
   }
