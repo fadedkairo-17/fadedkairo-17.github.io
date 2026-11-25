@@ -63,19 +63,19 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   clip-path: inset(50%); white-space: nowrap; user-select: none;
 }
 
-/* blocks: come up out of a blur, like something surfacing */
-.js [data-reveal] { opacity: 0; transform: translateY(14px); filter: blur(5px); }
+/* blocks: fade up. Only opacity and position move, which browsers can animate
+   cheaply; blur was dropped because it made scrolling stutter. */
+.js [data-reveal] { opacity: 0; transform: translateY(14px); }
 .js [data-reveal].is-in {
-  opacity: 1; transform: none; filter: none;
+  opacity: 1; transform: none;
   transition:
     opacity 0.8s ease var(--d, 0ms),
-    transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms),
-    filter 0.8s ease var(--d, 0ms);
+    transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms);
 }
 
-/* headings: each letter floats up out of the blur, bobs past its line and
-   settles, one after the other, so a swell runs along the line. A line of
-   foam washes in underneath and soaks away. */
+/* headings: each letter floats up, bobs past its line and settles, one after
+   the other, so a swell runs along the line. A line of foam washes in
+   underneath and soaks away. */
 .wave { position: relative; }
 .wave .w { display: inline-block; white-space: nowrap; }
 .wave .ch { display: inline-block; }
@@ -85,11 +85,11 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   animation-delay: calc(var(--d, 0ms) + var(--i) * var(--step, 32ms));
 }
 @keyframes float-in {
-  0%   { opacity: 0; transform: translateY(0.55em); filter: blur(6px); animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1); }
-  42%  { opacity: 1; transform: translateY(-0.13em); filter: blur(0); animation-timing-function: ease-in-out; }
+  0%   { opacity: 0; transform: translateY(0.55em); animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1); }
+  42%  { opacity: 1; transform: translateY(-0.13em); animation-timing-function: ease-in-out; }
   66%  { transform: translateY(0.05em); animation-timing-function: ease-in-out; }
   86%  { transform: translateY(-0.02em); animation-timing-function: ease-in-out; }
-  100% { opacity: 1; transform: none; filter: blur(0); }
+  100% { opacity: 1; transform: none; }
 }
 
 .js .wave::after {
