@@ -46,6 +46,42 @@
   var cta = $("#combo-cta");
   if (cta && !$$("a:not([hidden])", cta).length) cta.hidden = true;
 
+  // ── In-page links glide instead of jumping ──────────
+  var gliding = 0;
+  function glide(toY) {
+    var fromY = window.scrollY;
+    var distance = toY - fromY;
+    var time = Math.min(1200, Math.max(600, Math.abs(distance) * 0.4));
+    var started = null;
+    function step(now) {
+      if (started === null) started = now;
+      var p = Math.min(1, (now - started) / time);
+      var eased = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+      window.scrollTo(0, fromY + distance * eased);
+      if (p < 1) gliding = window.requestAnimationFrame(step);
+    }
+    window.cancelAnimationFrame(gliding);
+    gliding = window.requestAnimationFrame(step);
+  }
+  document.addEventListener("click", function (event) {
+    var link = event.target.closest('a[href^="#"]');
+    if (!link) return;
+    var id = link.getAttribute("href").slice(1);
+    var target = id && document.getElementById(id);
+    if (!target) return;
+    event.preventDefault();
+    var top = target.getBoundingClientRect().top + window.scrollY - 72;
+    var limit = document.documentElement.scrollHeight - window.innerHeight;
+    glide(Math.max(0, Math.min(top, limit)));
+    window.history.pushState(null, "", "#" + id);
+    target.setAttribute("tabindex", "-1");
+    target.focus({ preventScroll: true });
+  });
+  // if you scroll yourself mid-glide, you win
+  ["wheel", "touchstart", "keydown"].forEach(function (name) {
+    window.addEventListener(name, function () { window.cancelAnimationFrame(gliding); }, { passive: true });
+  });
+
   // ── Untitled video: swap the screenshot for the player on click ─
   var play = $("#untitled-play");
   var media = $("#untitled-media");

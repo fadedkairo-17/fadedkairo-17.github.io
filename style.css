@@ -17,7 +17,8 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
-  scroll-behavior: smooth;
+  /* in-page links glide; main.js does it so it works whatever the system's
+     animation setting is */
   scroll-padding-top: 72px;
   -webkit-text-size-adjust: 100%;
 }
@@ -52,6 +53,60 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   font: 500 13px var(--mono); z-index: 20;
 }
 .skip:focus { top: 10px; }
+
+/* ── Text coming in ──────────────────────────────────── */
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; user-select: none;
+}
+
+/* blocks: come up out of a blur, like something surfacing */
+.js [data-reveal] { opacity: 0; transform: translateY(14px); filter: blur(5px); }
+.js [data-reveal].is-in {
+  opacity: 1; transform: none; filter: none;
+  transition:
+    opacity 0.8s ease var(--d, 0ms),
+    transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms),
+    filter 0.8s ease var(--d, 0ms);
+}
+
+/* headings: each letter floats up out of the blur, bobs past its line and
+   settles, one after the other, so a swell runs along the line. A line of
+   foam washes in underneath and soaks away. */
+.wave { position: relative; }
+.wave .w { display: inline-block; white-space: nowrap; }
+.wave .ch { display: inline-block; }
+.js .wave .ch { opacity: 0; }
+.js .wave.is-in .ch {
+  animation: float-in 1.35s both;
+  animation-delay: calc(var(--d, 0ms) + var(--i) * var(--step, 32ms));
+}
+@keyframes float-in {
+  0%   { opacity: 0; transform: translateY(0.55em); filter: blur(6px); animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1); }
+  42%  { opacity: 1; transform: translateY(-0.13em); filter: blur(0); animation-timing-function: ease-in-out; }
+  66%  { transform: translateY(0.05em); animation-timing-function: ease-in-out; }
+  86%  { transform: translateY(-0.02em); animation-timing-function: ease-in-out; }
+  100% { opacity: 1; transform: none; filter: blur(0); }
+}
+
+.js .wave::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: -0.2em; height: 8px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='8' viewBox='0 0 72 8'%3E%3Cpath d='M0 4 Q18 -1 36 4 T72 4' fill='none' stroke='%23cfeaff' stroke-width='1.2'/%3E%3C/svg%3E") repeat-x;
+  opacity: 0;
+  pointer-events: none;
+}
+.js .wave.is-in::after {
+  animation: foam 2.4s ease-out both;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes foam {
+  0%   { opacity: 0;    clip-path: inset(0 100% 0 0); background-position-x: 0; }
+  14%  { opacity: 0.85; }
+  58%  { opacity: 0.7;  clip-path: inset(0 0 0 0); }
+  100% { opacity: 0;    clip-path: inset(0 0 0 0); background-position-x: -72px; }
+}
 
 /* ── Moon ────────────────────────────────────────────── */
 
@@ -476,7 +531,6 @@ figcaption {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
   .cursor { animation: none; }
   /* keep the moon pulsing, but as a fade only: no growing or shrinking */
   .moon-glow::before, .moon-glow::after { animation-name: glow-fade; }
